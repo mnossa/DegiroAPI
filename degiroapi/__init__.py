@@ -6,6 +6,7 @@ from degiroapi.intervaltypes import Interval
 
 
 class DeGiro:
+    # __LOGIN_URL = 'https://trader.degiro.nl/login/it#/login'
     __LOGIN_URL = 'https://trader.degiro.nl/login/secure/login'
     __CONFIG_URL = 'https://trader.degiro.nl/login/secure/config'
 
@@ -68,21 +69,28 @@ class DeGiro:
                        error_message='Could not log out')
 
     @staticmethod
-    def __request(url, cookie=None, payload=None, headers=None, data=None, post_params=None, request_type=__GET_REQUEST,
+    # def __request(url, cookie=None, payload=None, headers=None, data=None, post_params=None, request_type=__GET_REQUEST,
+    def __request(url, cookie=None, payload=None, headers={}, data=None, post_params=None, request_type=__GET_REQUEST,
                   error_message='An error occurred.'):
+        
+        headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:107.0) Gecko/20100101 Firefox/107.0'
+        headers['origin'] = 'https://trader.degiro.nl'
+        headers['accept'] = 'application/json, text/plain, */*'
+        headers['content-type'] = 'application/json;charset=UTF-8'
+        
 
         if request_type == DeGiro.__DELETE_REQUEST:
-            response = requests.delete(url, json=payload)
+            response = requests.delete(url, headers=headers, json=payload)
         elif request_type == DeGiro.__GET_REQUEST and cookie:
-            response = requests.get(url, cookies=cookie)
+            response = requests.get(url, headers=headers, cookies=cookie)
         elif request_type == DeGiro.__GET_REQUEST:
-            response = requests.get(url, params=payload)
+            response = requests.get(url, headers=headers, params=payload)
         elif request_type == DeGiro.__POST_REQUEST and headers and data:
             response = requests.post(url, headers=headers, params=payload, data=data)
         elif request_type == DeGiro.__POST_REQUEST and post_params:
-            response = requests.post(url, params=post_params, json=payload)
+            response = requests.post(url, headers=headers, params=post_params, json=payload)
         elif request_type == DeGiro.__POST_REQUEST:
-            response = requests.post(url, json=payload)
+            response = requests.post(url, headers=headers, json=payload)
         else:
             raise Exception(f'Unknown request type: {request_type}')
 
