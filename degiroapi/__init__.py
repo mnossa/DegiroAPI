@@ -73,6 +73,7 @@ class DeGiro:
     def __request(url, cookie=None, payload=None, headers={}, data=None, post_params=None, request_type=__GET_REQUEST,
                   error_message='An error occurred.'):
         
+        # Risolve il blocco da parte di degiro
         headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:107.0) Gecko/20100101 Firefox/107.0'
         headers['origin'] = 'https://trader.degiro.nl'
         headers['accept'] = 'application/json, text/plain, */*'
