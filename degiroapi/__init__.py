@@ -1,4 +1,5 @@
-import requests, json
+import requests
+import json
 from degiroapi.order import Order
 from degiroapi.client_info import ClientInfo
 from degiroapi.datatypes import Data
@@ -72,13 +73,16 @@ class DeGiro:
     # def __request(url, cookie=None, payload=None, headers=None, data=None, post_params=None, request_type=__GET_REQUEST,
     def __request(url, cookie=None, payload=None, headers={}, data=None, post_params=None, request_type=__GET_REQUEST,
                   error_message='An error occurred.'):
-        
+
         # Risolve il blocco da parte di degiro
         headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:107.0) Gecko/20100101 Firefox/107.0'
         headers['origin'] = 'https://trader.degiro.nl'
         headers['accept'] = 'application/json, text/plain, */*'
         headers['content-type'] = 'application/json;charset=UTF-8'
-        
+
+        # ERROR Order Error: Value for header {intAccount: 111111111} must be of type str or bytes, not <class 'int'>
+        if 'intAccount' in headers:
+            headers['intAccount'] = str(headers['intAccount'])
 
         if request_type == DeGiro.__DELETE_REQUEST:
             response = requests.delete(url, headers=headers, json=payload)
@@ -87,9 +91,11 @@ class DeGiro:
         elif request_type == DeGiro.__GET_REQUEST:
             response = requests.get(url, headers=headers, params=payload)
         elif request_type == DeGiro.__POST_REQUEST and headers and data:
-            response = requests.post(url, headers=headers, params=payload, data=data)
+            response = requests.post(
+                url, headers=headers, params=payload, data=data)
         elif request_type == DeGiro.__POST_REQUEST and post_params:
-            response = requests.post(url, headers=headers, params=post_params, json=payload)
+            response = requests.post(
+                url, headers=headers, params=post_params, json=payload)
         elif request_type == DeGiro.__POST_REQUEST:
             response = requests.post(url, headers=headers, json=payload)
         else:
@@ -146,7 +152,8 @@ class DeGiro:
         # max 90 days
         if (to_date - from_date).days > 90:
             raise Exception('The maximum timespan is 90 days')
-        data = self.__request(DeGiro.__ORDERS_URL, None, orders_payload, error_message='Could not get orders.')['data']
+        data = self.__request(DeGiro.__ORDERS_URL, None, orders_payload,
+                              error_message='Could not get orders.')['data']
         data_not_executed = []
         if not_executed:
             for d in data:
@@ -172,7 +179,8 @@ class DeGiro:
         data = []
         for item in cashfunds['cashFunds']['value']:
             if item['value'][2]['value'] != 0:
-                data.append(item['value'][1]['value'] + " " + str(item['value'][2]['value']))
+                data.append(item['value'][1]['value'] + " " +
+                            str(item['value'][2]['value']))
         return data
 
     @staticmethod
@@ -222,7 +230,9 @@ class DeGiro:
                                error_message='Could not get data'), filter_zero)
         else:
             return self.__request(
-                DeGiro.__DATA_URL + str(self.client_info.account_id) + ';jsessionid=' + self.session_id, None,
+                DeGiro.__DATA_URL +
+                str(self.client_info.account_id) +
+                ';jsessionid=' + self.session_id, None,
                 data_payload,
                 error_message='Could not get data')
 
@@ -242,7 +252,7 @@ class DeGiro:
         }
 
         return self.__request(DeGiro.__PRICE_DATA_URL, None, price_payload,
-                             error_message='Could not get real time price')['series']
+                              error_message='Could not get real time price')['series']
 
     def buyorder(self, orderType, productId, timeType, size, limit=None, stop_loss=None):
         place_buy_order_params = {
